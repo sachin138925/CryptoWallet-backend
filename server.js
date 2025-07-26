@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 connectDB();
 const app = express();
 
-const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+const allowedOrigin = "https://crypto-wallet-black.vercel.app" || 'http://localhost:3000';
 const corsOptions = { origin: allowedOrigin };
 
 app.options('*', cors(corsOptions)); // Handle pre-flight requests
