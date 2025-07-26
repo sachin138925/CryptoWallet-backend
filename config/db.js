@@ -1,4 +1,3 @@
-// config/db.js
 require('dotenv').config();
 const mongoose = require('mongoose');
 
@@ -14,6 +13,7 @@ const connectDB = async () => {
         console.log('✅ MongoDB connected successfully.');
     } catch (err) {
         console.error('❌ MongoDB connection FAILED:', err.message);
+        // This will now clearly show in the Vercel logs if the DB fails.
     }
 };
 

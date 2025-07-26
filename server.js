@@ -2,15 +2,39 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require('./config/db');
 
+console.log("--- Server process starting ---");
+
+// Connect to the database immediately.
 connectDB();
+
 const app = express();
+console.log("--- Express app initialized ---");
 
-const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
-const corsOptions = { origin: allowedOrigin };
 
-app.options('*', cors(corsOptions)); // Handle pre-flight requests
+// --- Middleware Configuration ---
+const allowedOrigin = process.env.CORS_ORIGIN;
+console.log(`--- CORS Origin set to: ${allowedOrigin} ---`);
+
+const corsOptions = {
+  origin: allowedOrigin,
+};
+
+// 1. THIS IS THE FIX: Enable CORS pre-flight across-the-board.
+app.options('*', cors(corsOptions));
+
+// 2. Use CORS for all other requests.
 app.use(cors(corsOptions));
-app.use(express.json());
-app.use('/api', require('./routes/apiRoutes.js'));
 
+// 3. Use the body parser.
+app.use(express.json());
+console.log("--- Middleware (CORS, JSON) applied ---");
+
+
+// --- API Routes ---
+app.use('/api', require('./routes/apiRoutes.js'));
+console.log("--- API routes wired up ---");
+
+
+// Export the app for Vercel's serverless environment.
 module.exports = app;
+console.log("--- Server module exported ---");
