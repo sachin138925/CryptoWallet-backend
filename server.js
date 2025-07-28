@@ -1,40 +1,20 @@
-// backend/server.js
-
-require('dotenv').config(); // This is for local testing, Vercel will ignore it.
+// A Bare Minimum server.js for Vercel Debugging
 
 const express = require("express");
 const cors = require("cors");
-//const connectDB = require("./config/db");
-
-// We call this immediately. If it fails, the logs on Vercel will show the error.
-//connectDB();
 
 const app = express();
 
-// Whitelisted origins
-const whitelist = [
-  "http://localhost:3000",
-  "https://cryptonest-wallet-nu.vercel.app"
-];
+// Use a simple, wide-open CORS policy for this test
+app.use(cors());
 
-// CORS configuration
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  }
-};
+// A simple test route that does not require any other files
+app.get("/api/health", (req, res) => {
+    // This message proves the server is running.
+    res.status(200).json({ status: "The bare minimum server is alive!" });
+});
 
-// --- MIDDLEWARE ---
-app.use(cors(corsOptions));
-app.use(express.json());
+// We are not including the main router to avoid dependency errors
+// app.use("/api", require("./routes/apiRoutes.js"));
 
-// --- ROUTES ---
-app.use("/api", require("./routes/apiRoutes.js"));
-
-// --- EXPORT FOR VERCEL ---
-// This is the correct way for a serverless environment. NO app.listen()!
 module.exports = app;
