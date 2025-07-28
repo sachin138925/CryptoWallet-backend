@@ -7,7 +7,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 
 // We call this immediately. If it fails, the logs on Vercel will show the error.
-connectDB();
+//connectDB();
 
 const app = express();
 
