@@ -16,7 +16,7 @@ router.get('/health', (req, res) => {
 
 // --- Wallet Routes ---
 router.post('/wallet', walletController.createWallet);
-router.post('/wallet/:name', walletController.loadWallet);
+router.get('/wallet/:name', walletController.loadWallet);
 
 // --- Transaction Routes ---
 router.post('/tx/:hash', transactionController.logTransaction);
