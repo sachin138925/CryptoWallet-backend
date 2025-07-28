@@ -1,23 +1,40 @@
 // backend/server.js
 
-require('dotenv').config(); // <-- ADD THIS LINE AT THE VERY TOP
+require('dotenv').config(); // This is for local testing, Vercel will ignore it.
 
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
+// We call this immediately. If it fails, the logs on Vercel will show the error.
+connectDB();
+
 const app = express();
 
-// ... the rest of your server.js file remains exactly the same ...
+// Whitelisted origins
+const whitelist = [
+  "http://localhost:3000",
+  "https://cryptonest-wallet-nu.vercel.app"
+];
 
-// --- SERVER STARTUP ---
-const PORT = process.env.PORT || 5000;
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  }
+};
 
-connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log(`✅ Server is listening on port ${PORT}`);
-    });
-}).catch(err => {
-    console.error("❌ Failed to connect to MongoDB. Server did not start.", err);
-    process.exit(1);
-});
+// --- MIDDLEWARE ---
+app.use(cors(corsOptions));
+app.use(express.json());
+
+// --- ROUTES ---
+app.use("/api", require("./routes/apiRoutes.js"));
+
+// --- EXPORT FOR VERCEL ---
+// This is the correct way for a serverless environment. NO app.listen()!
+module.exports = app;
