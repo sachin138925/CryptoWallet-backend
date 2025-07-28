@@ -4,7 +4,7 @@ require('dotenv').config(); // This is for local testing, Vercel will ignore it.
 
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/db");
+//const connectDB = require("./config/db");
 
 // We call this immediately. If it fails, the logs on Vercel will show the error.
 //connectDB();
