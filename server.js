@@ -1,20 +1,12 @@
 // The final, complete server.js for a Render deployment
-
 require('dotenv').config(); // For local development
-
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
 const app = express();
 
-// Whitelisted origins
-const whitelist = [
-  "http://localhost:3000",
-  "https://cryptonest-wallet-nu.vercel.app"
-];
-
-// CORS configuration
+const whitelist = ["http://localhost:3000", "https://cryptonest-wallet-nu.vercel.app"];
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || whitelist.includes(origin)) {
@@ -25,14 +17,10 @@ const corsOptions = {
   }
 };
 
-// --- MIDDLEWARE ---
 app.use(cors(corsOptions));
 app.use(express.json());
-
-// --- ROUTES ---
 app.use("/api", require("./routes/apiRoutes.js"));
 
-// --- SERVER STARTUP ---
 // Render provides the PORT environment variable.
 const PORT = process.env.PORT || 5000;
 
