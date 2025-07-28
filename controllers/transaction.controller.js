@@ -1,24 +1,30 @@
 // backend/controllers/transaction.controller.js
 
-const { JsonRpcProvider, Contract, Interface, formatEther, formatUnits } = require("ethers");
+// NOTICE: We are NOT requiring 'ethers' at the top of the file anymore.
 const TxLog = require('../models/txLog.model');
 
-// --- Config (Moved provider initialization) ---
+// --- Config (Constants are safe to keep here) ---
 const USDT_CONTRACT_ADDRESS = "0x787A697324dbA4AB965C58CD33c13ff5eeA6295F";
 const USDC_CONTRACT_ADDRESS = "0x342e3aA1248AB77E319e3331C6fD3f1F2d4B36B1";
 const ERC20_ABI = [ "event Transfer(address indexed from, address indexed to, uint256 value)", "function decimals() view returns (uint8)" ];
-const erc20Interface = new Interface(ERC20_ABI);
 
 exports.logTransaction = async (req, res) => {
     try {
-        // --- MOVED INITIALIZATION HERE ---
-        // The provider is now created only when this function is called.
+        // --- DYNAMIC IMPORT ---
+        // We only load the massive ethers library when this function is actually called.
+        // This prevents the server from crashing on startup.
+        const { JsonRpcProvider, Contract, Interface, formatEther, formatUnits } = require("ethers");
+        
+        // Now that the library is loaded, we can use it.
+        const erc20Interface = new Interface(ERC20_ABI);
         const provider = new JsonRpcProvider("https://bsc-testnet-dataseed.bnbchain.org");
 
         const { hash } = req.params;
         if(await TxLog.findOne({ hash })) return res.status(200).json({message: "Tx already logged."});
+        
         const receipt = await provider.getTransactionReceipt(hash);
         if (!receipt) return res.status(404).json({ error: "Transaction not yet mined" });
+
         const block = await provider.getBlock(receipt.blockNumber);
         const tx = await provider.getTransaction(hash);
         let amountStr = "0", tokenName = "N/A", actualTo = receipt.to;
@@ -42,7 +48,10 @@ exports.logTransaction = async (req, res) => {
         const logData = { hash: receipt.hash, from: receipt.from.toLowerCase(), to: (actualTo || receipt.to).toLowerCase(), blockNumber: receipt.blockNumber, amount: amountStr, tokenName, status: receipt.status === 1 ? "Success" : "Failed", timestamp: new Date(block.timestamp * 1000) };
         await TxLog.findOneAndUpdate({ hash }, logData, { upsert: true, new: true });
         res.status(201).json(logData);
-    } catch (err) { res.status(500).json({ error: "Server error logging transaction" }); }
+    } catch (err) { 
+        console.error("--- ERROR IN logTransaction ---", err); // Add logging
+        res.status(500).json({ error: "Server error logging transaction" }); 
+    }
 };
 
 exports.getHistory = async (req, res) => {
@@ -52,6 +61,7 @@ exports.getHistory = async (req, res) => {
         const history = await TxLog.find({ $or: [{ from: lowerCaseAddress }, { to: lowerCaseAddress }] }).sort({ timestamp: -1 });
         res.json(history);
     } catch (err) {
+        console.error("--- ERROR IN getHistory ---", err); // Add logging
         res.status(500).json({ error: "Failed to fetch history" });
     }
 };
