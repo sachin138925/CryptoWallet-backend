@@ -4,7 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
-connectDB();
 const app = express();
 
 // Whitelisted origins
@@ -24,13 +23,26 @@ const corsOptions = {
   }
 };
 
-// Handle CORS for all routes
+// --- MIDDLEWARE ---
 app.use(cors(corsOptions));
-
-// JSON body parser
 app.use(express.json());
 
-// API routes
+// --- ROUTES ---
 app.use("/api", require("./routes/apiRoutes.js"));
 
-module.exports = app;
+// --- SERVER STARTUP (This is the new, important part for Render) ---
+// Render provides the PORT environment variable for your service.
+const PORT = process.env.PORT || 5000;
+
+// Connect to the database first, and only then start the server.
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        // This message will appear in your Render logs when it's successful.
+        console.log(`✅ Server is listening on port ${PORT}`);
+    });
+}).catch(err => {
+    console.error("❌ Failed to connect to MongoDB. Server did not start.", err);
+    process.exit(1); // This tells Render that the startup failed.
+});
+
+// We no longer need 'module.exports = app;'
