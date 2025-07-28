@@ -1,17 +1,23 @@
-// A Bare Minimum server.js for Vercel Debugging
-
+// The final, complete server.js file
+require('dotenv').config();
 const express = require("express");
 const cors = require("cors");
+const connectDB = require("./config/db");
+
+connectDB(); // Connect to the database
 
 const app = express();
-
-app.use(cors());
-
-// We are NOT adding the JSON parser yet, to keep it simple
-// app.use(express.json());
-
-// --- ADDING THE ROUTER BACK ---
-// If the server crashes now, the error is in one of the files required by apiRoutes.js
-app.use("/api", require("./routes/apiRoutes.js"));
-
+const whitelist = [ "http://localhost:3000", "https://cryptonest-wallet-nu.vercel.app" ];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  }
+};
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use("/api", require("./routes/apiRoutes.js")); // Use your correct routes
 module.exports = app;
