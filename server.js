@@ -1,3 +1,5 @@
+// backend/server.js
+
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -5,16 +7,15 @@ const connectDB = require("./config/db");
 connectDB();
 const app = express();
 
-// Whitelisted origins (add more if needed)
+// Whitelisted origins
 const whitelist = [
   "http://localhost:3000",
-  "https://crypto-wallet-black.vercel.app"
+  "https://cryptonest-wallet-nu.vercel.app" // Your correct frontend URL
 ];
 
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
@@ -23,9 +24,8 @@ const corsOptions = {
   }
 };
 
-// Handle CORS
-app.options("*", cors(corsOptions)); // For pre-flight
-app.use(cors(corsOptions));          // For actual requests
+// Handle CORS for all routes
+app.use(cors(corsOptions));
 
 // JSON body parser
 app.use(express.json());
