@@ -1,9 +1,9 @@
-// controllers/transaction.controller.js
+// backend/controllers/transaction.controller.js
+
 const { JsonRpcProvider, Contract, Interface, formatEther, formatUnits } = require("ethers");
 const TxLog = require('../models/txLog.model');
 
-// --- Config (Should ideally move to a config file) ---
-const provider = new JsonRpcProvider("https://bsc-testnet-dataseed.bnbchain.org");
+// --- Config (Moved provider initialization) ---
 const USDT_CONTRACT_ADDRESS = "0x787A697324dbA4AB965C58CD33c13ff5eeA6295F";
 const USDC_CONTRACT_ADDRESS = "0x342e3aA1248AB77E319e3331C6fD3f1F2d4B36B1";
 const ERC20_ABI = [ "event Transfer(address indexed from, address indexed to, uint256 value)", "function decimals() view returns (uint8)" ];
@@ -11,6 +11,10 @@ const erc20Interface = new Interface(ERC20_ABI);
 
 exports.logTransaction = async (req, res) => {
     try {
+        // --- MOVED INITIALIZATION HERE ---
+        // The provider is now created only when this function is called.
+        const provider = new JsonRpcProvider("https://bsc-testnet-dataseed.bnbchain.org");
+
         const { hash } = req.params;
         if(await TxLog.findOne({ hash })) return res.status(200).json({message: "Tx already logged."});
         const receipt = await provider.getTransactionReceipt(hash);
